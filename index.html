@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Indian Farmer Research Platform</title>
+  <!-- htmx library for future enhancements -->
+  <script src="https://unpkg.com/htmx.org@1.9.2"></script>
+  <style>
+    /* Global Styles */
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+      background: #f9f9f9;
+    }
+    header {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    nav {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+    nav button {
+      padding: 10px 20px;
+      border: none;
+      background: #1e90ff;
+      color: #fff;
+      cursor: pointer;
+      border-radius: 4px;
+    }
+    nav button:hover {
+      background: #0d6efd;
+    }
+    main {
+      max-width: 900px;
+      margin: auto;
+      background: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    h2 {
+      border-bottom: 1px solid #ccc;
+      padding-bottom: 5px;
+    }
+    form {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+    label {
+      font-weight: bold;
+    }
+    input[type="text"],
+    input[type="number"],
+    select {
+      padding: 8px;
+      font-size: 14px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+    fieldset {
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      padding: 10px;
+    }
+    fieldset legend {
+      font-weight: bold;
+    }
+    button.submit-btn {
+      width: 200px;
+      padding: 10px;
+      background: #28a745;
+      border: none;
+      color: #fff;
+      font-size: 14px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    button.submit-btn:hover {
+      background: #218838;
+    }
+    .section {
+      display: none;
+    }
+    .listingCard {
+      border: 1px solid #ccc;
+      padding: 10px;
+      margin-bottom: 10px;
+      border-radius: 4px;
+      background: #fafafa;
+    }
+    /* CSS Grid for Buyer and Dealer Sections */
+    .buyer-grid, .dealer-grid {
+      display: grid;
+      gap: 20px;
+      grid-template-columns: 1fr;
+    }
+    @media (min-width: 768px) {
+      .buyer-grid, .dealer-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Indian Farmer Research Platform</h1>
+    <nav>
+      <button onclick="showSection('buyerSection')">Buyer</button>
+      <button onclick="showSection('sellerSection')">Seller</button>
+      <button onclick="showSection('dealerSection')">Property Dealer</button>
+    </nav>
+  </header>
+
+  <main>
+    <!-- Buyer Interface -->
+    <section id="buyerSection" class="section">
+      <h2>Buyer Interface</h2>
+      <!-- Buyer Grid: Search Form and Listings Side-by-Side on Larger Screens -->
+      <div class="buyer-grid">
+        <div>
+          <form id="buyerSearchForm">
+            <label for="buyerState">Select State:</label>
+            <select id="buyerState" required>
+              <option value="">Select State</option>
+              <option value="Maharashtra">Maharashtra</option>
+              <option value="Karnataka">Karnataka</option>
+              <option value="Gujarat">Gujarat</option>
+              <option value="Tamil Nadu">Tamil Nadu</option>
+              <!-- Add more states as needed -->
+            </select>
+            <label for="buyerDistrict">District (optional):</label>
+            <input type="text" id="buyerDistrict" placeholder="Enter District" />
+            <label for="buyerVillage">Village (optional):</label>
+            <input type="text" id="buyerVillage" placeholder="Enter Village" />
+            <label for="buyerAcres">Acres to Buy (optional):</label>
+            <input type="number" id="buyerAcres" min="0" placeholder="e.g., 10" />
+            <label for="buyerBudget">Budget (INR):</label>
+            <input type="number" id="buyerBudget" min="0" placeholder="e.g., 500000" />
+            <button type="button" class="submit-btn" onclick="searchListings()">Search Listings</button>
+          </form>
+        </div>
+        <div id="buyerListings"></div>
+      </div>
+    </section>
+
+    <!-- Seller Interface -->
+    <section id="sellerSection" class="section">
+      <h2>Seller Interface</h2>
+      <form id="sellerForm">
+        <label for="sellerName">Seller Name:</label>
+        <input type="text" id="sellerName" required placeholder="Your Name" />
+        
+        <label for="sellerState">State:</label>
+        <select id="sellerState" required>
+          <option value="">Select State</option>
+          <option value="Maharashtra">Maharashtra</option>
+          <option value="Karnataka">Karnataka</option>
+          <option value="Gujarat">Gujarat</option>
+          <option value="Tamil Nadu">Tamil Nadu</option>
+          <!-- Add more states as needed -->
+        </select>
+        <label for="sellerDistrict">District:</label>
+        <input type="text" id="sellerDistrict" required placeholder="District Name" />
+        <label for="sellerTehsil">Tehsil:</label>
+        <input type="text" id="sellerTehsil" required placeholder="Tehsil Name" />
+        <label for="sellerVillage">Village:</label>
+        <input type="text" id="sellerVillage" required placeholder="Village Name" />
+
+        <!-- New Field: Total Land Holding -->
+        <label for="totalLandHolding">Total Land Holding (acres):</label>
+        <input type="number" id="totalLandHolding" required placeholder="e.g., 10" />
+
+        <label for="soilType">Soil Type:</label>
+        <select id="soilType" required>
+          <option value="">Select Soil Type</option>
+          <option value="sandy">Sandy</option>
+          <option value="clay">Clay</option>
+          <option value="loam">Loam</option>
+          <option value="peaty">Peaty</option>
+          <option value="silty">Silty</option>
+          <option value="chalky">Chalky</option>
+        </select>
+        <label for="tubewells">Number of Tubewells:</label>
+        <input type="number" id="tubewells" min="0" required placeholder="e.g., 2" />
+
+        <fieldset>
+          <legend>Land Holding Type:</legend>
+          <label>
+            <input type="radio" name="holdingType" value="mushtarka" required />
+            Joint Holding (Mushtarka Khata)
+          </label>
+          <label>
+            <input type="radio" name="holdingType" value="partitioned" />
+            Partitioned (Own Khewat)
+          </label>
+        </fieldset>
+        <label for="yearsOwnership">Years of Ownership:</label>
+        <input type="number" id="yearsOwnership" min="1" required placeholder="e.g., 5" />
+        <label for="mainCrops">Main Crops Grown (comma separated):</label>
+        <input type="text" id="mainCrops" required placeholder="e.g., wheat, rice" />
+        
+        <!-- Field: Portion of Land to Sell -->
+        <label for="landToSell">Land to Sell (acres):</label>
+        <input type="number" id="landToSell" min="0" required placeholder="e.g., 5" />
+
+        <!-- New Field: Expected Price for Going Rate -->
+        <label for="expectedPrice">Expected Price (INR):</label>
+        <input type="number" id="expectedPrice" min="0" required placeholder="e.g., 1500000" />
+
+        <label for="mediatorPreference">Mediator Preference:</label>
+        <select id="mediatorPreference" required>
+          <option value="">Select Option</option>
+          <option value="no">Direct Contact (No Mediator)</option>
+          <option value="yes">Require Mediator (Hide from Buyers)</option>
+        </select>
+        <label for="noPropertyDealers">Property Dealers:</label>
+        <select id="noPropertyDealers" required>
+          <option value="">Select Option</option>
+          <option value="no">Allow Property Dealers</option>
+          <option value="yes">No Property Dealers – Please Excuse</option>
+        </select>
+        <label for="hasStorage">Crop Storage Facility:</label>
+        <select id="hasStorage" required onchange="toggleStorage()">
+          <option value="">Select Option</option>
+          <option value="yes">Yes</option>
+          <option value="no">No</option>
+        </select>
+        <div id="storageDiv" style="display:none;">
+          <label for="storageCapacity">Storage Capacity (tons):</label>
+          <input type="number" id="storageCapacity" min="1" placeholder="e.g., 20" />
+        </div>
+        <button type="button" class="submit-btn" onclick="submitSellerListing()">Submit Listing</button>
+      </form>
+      <div id="sellerConfirmation"></div>
+    </section>
+
+    <!-- Property Dealer Interface -->
+    <section id="dealerSection" class="section">
+      <h2>Property Dealer Interface</h2>
+      <!-- Dealer Grid: Registration Form and Listings -->
+      <div class="dealer-grid">
+        <div>
+          <form id="dealerForm">
+            <label for="dealerName">Dealer Name:</label>
+            <input type="text" id="dealerName" required placeholder="Your Name" />
+            <label for="commissionTerms">Commission Terms:</label>
+            <input type="text" id="commissionTerms" required placeholder="e.g., 2% commission" />
+            <button type="button" class="submit-btn" onclick="registerDealer()">Register Dealer</button>
+          </form>
+          <div id="dealerConfirmation"></div>
+        </div>
+        <div>
+          <h3>Available Listings for Dealers</h3>
+          <div id="dealerListings"></div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    // Utility: Show the appropriate section and refresh listings if needed.
+    function showSection(sectionId) {
+      document.querySelectorAll('.section').forEach(function(section) {
+        section.style.display = 'none';
+      });
+      document.getElementById(sectionId).style.display = 'block';
+      if (sectionId === 'buyerSection') {
+        loadBuyerListings();
+      }
+      if (sectionId === 'dealerSection') {
+        loadDealerListings();
+      }
+    }
+    // Default view
+    showSection('buyerSection');
+
+    // Toggle storage capacity input
+    function toggleStorage() {
+      var hasStorage = document.getElementById('hasStorage').value;
+      document.getElementById('storageDiv').style.display = (hasStorage === 'yes') ? 'block' : 'none';
+    }
+
+    // Submit seller listing and save to localStorage
+    function submitSellerListing() {
+      var listing = {
+        sellerName: document.getElementById('sellerName').value,
+        state: document.getElementById('sellerState').value,
+        district: document.getElementById('sellerDistrict').value,
+        tehsil: document.getElementById('sellerTehsil').value,
+        village: document.getElementById('sellerVillage').value,
+        totalLandHolding: parseFloat(document.getElementById('totalLandHolding').value) || 0,
+        soilType: document.getElementById('soilType').value,
+        tubewells: parseInt(document.getElementById('tubewells').value) || 0,
+        holdingType: document.querySelector('input[name="holdingType"]:checked').value,
+        yearsOwnership: parseInt(document.getElementById('yearsOwnership').value) || 0,
+        mainCrops: document.getElementById('mainCrops').value,
+        landToSell: parseFloat(document.getElementById('landToSell').value) || 0,
+        expectedPrice: parseInt(document.getElementById('expectedPrice').value) || 0,
+        mediatorPreference: document.getElementById('mediatorPreference').value,
+        noPropertyDealers: document.getElementById('noPropertyDealers').value,
+        hasStorage: document.getElementById('hasStorage').value,
+        storageCapacity: (document.getElementById('hasStorage').value === 'yes')
+          ? parseInt(document.getElementById('storageCapacity').value) || 0
+          : 0,
+        listingId: Date.now()
+      };
+      var listings = JSON.parse(localStorage.getItem('listings')) || [];
+      listings.push(listing);
+      localStorage.setItem('listings', JSON.stringify(listings));
+      document.getElementById('sellerConfirmation').innerText = "Listing submitted successfully!";
+      document.getElementById('sellerForm').reset();
+      toggleStorage(); // Reset storage section
+    }
+
+    // Buyer: Search listings based on criteria
+    function searchListings() {
+      var state = document.getElementById('buyerState').value;
+      var district = document.getElementById('buyerDistrict').value.toLowerCase();
+      var village = document.getElementById('buyerVillage').value.toLowerCase();
+      var acres = parseFloat(document.getElementById('buyerAcres').value) || 0;
+      var budget = parseInt(document.getElementById('buyerBudget').value) || 0;
+      var listings = JSON.parse(localStorage.getItem('listings')) || [];
+      var results = listings.filter(function(listing) {
+        if (listing.state !== state) return false;
+        if (district && listing.district.toLowerCase().indexOf(district) === -1) return false;
+        if (village && listing.village.toLowerCase().indexOf(village) === -1) return false;
+        if (acres && listing.landToSell < acres) return false;
+        // Future enhancement: Compare buyer budget with expectedPrice if needed.
+        return true;
+      });
+      displayBuyerListings(results);
+    }
+
+    // Display listing cards to buyer (exclude listings requiring a mediator)
+    function displayBuyerListings(listings) {
+      var container = document.getElementById('buyerListings');
+      container.innerHTML = "";
+      if (listings.length === 0) {
+        container.innerHTML = "<p>Sorry, no listings found in selected state.</p>";
+        return;
+      }
+      listings.forEach(function(listing) {
+        if (listing.mediatorPreference === "yes") return;
+        var card = document.createElement('div');
+        card.className = "listingCard";
+        card.innerHTML = "<h3>" + listing.sellerName + " - " + listing.state + ", " + listing.district + "</h3>" +
+          "<p>Location: " + listing.tehsil + ", " + listing.village + "</p>" +
+          "<p>Total Land Holding: " + listing.totalLandHolding + " acres</p>" +
+          "<p>Land to Sell: " + listing.landToSell + " acres</p>" +
+          "<p>Expected Price: INR " + listing.expectedPrice + "</p>" +
+          "<p>Soil Type: " + listing.soilType + "</p>" +
+          "<p>Tubewells: " + listing.tubewells + "</p>" +
+          "<p>Holding Type: " + listing.holdingType + "</p>" +
+          "<p>Years of Ownership: " + listing.yearsOwnership + "</p>" +
+          "<p>Main Crops: " + listing.mainCrops + "</p>" +
+          ((listing.hasStorage === "yes") ? "<p>Storage Capacity: " + listing.storageCapacity + " tons</p>" : "") +
+          "<p>Mediator Preference: " + (listing.mediatorPreference === "yes" ? "Requires Mediator" : "Direct Contact") + "</p>" +
+          "<button onclick='contactSeller(" + listing.listingId + ")'>Contact Seller</button>";
+        container.appendChild(card);
+      });
+    }
+
+    // Load all buyer listings (for default view)
+    function loadBuyerListings() {
+      var listings = JSON.parse(localStorage.getItem('listings')) || [];
+      displayBuyerListings(listings);
+    }
+
+    // Simulate contacting the seller
+    function contactSeller(listingId) {
+      var listings = JSON.parse(localStorage.getItem('listings')) || [];
+      var listing = listings.find(function(l) { return l.listingId === listingId; });
+      if (listing) {
+        alert("Contact details for " + listing.sellerName + " will be shared shortly.");
+      }
+    }
+
+    // Property Dealer: Register dealer
+    function registerDealer() {
+      var dealerName = document.getElementById('dealerName').value;
+      var commissionTerms = document.getElementById('commissionTerms').value;
+      if (dealerName && commissionTerms) {
+        var dealers = JSON.parse(localStorage.getItem('dealers')) || [];
+        dealers.push({
+          dealerName: dealerName,
+          commissionTerms: commissionTerms,
+          dealerId: Date.now()
+        });
+        localStorage.setItem('dealers', JSON.stringify(dealers));
+        document.getElementById('dealerConfirmation').innerText = "Dealer registered successfully!";
+        document.getElementById('dealerForm').reset();
+        loadDealerListings();
+      }
+    }
+
+    // Load listings for property dealers (exclude those marked with "No Property Dealers")
+    function loadDealerListings() {
+      var listings = JSON.parse(localStorage.getItem('listings')) || [];
+      var container = document.getElementById('dealerListings');
+      container.innerHTML = "";
+      listings.forEach(function(listing) {
+        if (listing.noPropertyDealers === "yes") return;
+        var card = document.createElement('div');
+        card.className = "listingCard";
+        card.innerHTML = "<h3>" + listing.sellerName + " - " + listing.state + ", " + listing.district + "</h3>" +
+          "<p>Location: " + listing.tehsil + ", " + listing.village + "</p>" +
+          "<p>Total Land Holding: " + listing.totalLandHolding + " acres</p>" +
+          "<p>Land to Sell: " + listing.landToSell + " acres</p>" +
+          "<p>Expected Price: INR " + listing.expectedPrice + "</p>" +
+          "<p>Soil Type: " + listing.soilType + "</p>" +
+          "<p>Tubewells: " + listing.tubewells + "</p>" +
+          "<p>Holding Type: " + listing.holdingType + "</p>" +
+          "<p>Years of Ownership: " + listing.yearsOwnership + "</p>" +
+          "<p>Main Crops: " + listing.mainCrops + "</p>" +
+          ((listing.hasStorage === "yes") ? "<p>Storage Capacity: " + listing.storageCapacity + " tons</p>" : "") +
+          "<p>Mediator Preference: " + (listing.mediatorPreference === "yes" ? "Requires Mediator" : "Direct Contact") + "</p>" +
+          "<button onclick='contactSeller(" + listing.listingId + ")'>Contact Seller</button>";
+        container.appendChild(card);
+      });
+    }
+  </script>
+</body>
+</html>
